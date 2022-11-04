@@ -62,16 +62,18 @@ class DQN(nn.Module):
 
 
 def main():
-    game = "Acrobot-v1"
+    #game = "Acrobot-v1"
+    game = 'CartPole-v0'
     #env = gym.envs.make("CartPole-v0")
     #env = gym.envs.make("MountainCar-v0")
     #env = gym.envs.make("Pendulum-v0")
     env = gym.envs.make(game)
-    batch_size = 128
+    #env = gym.envs.make(game)
+    batch_size = 2048
     mlen = 25000
     memory = deque(maxlen=mlen)
     agent = DQN(len(env.observation_space.sample()), env.action_space.n)
-    episode = 3000
+    episode = 30000
     epsilon = 1
     need_render = False
     reward_que = deque(maxlen=20)
@@ -79,20 +81,15 @@ def main():
 
     for e in range(episode):
         done = False
-        state = env.reset()
+        state, _ = env.reset()
         time = 0
         reward_sum = 0
         if e % 20 == 0:
             epsilon -= 0.1
             epsilon = max(epsilon, 0.01)
         while not done:
-            if need_render:
-                env.render()
-            #else:
-            #    epsilon -= 0.00005
-            #    epsilon = max(epsilon, 0.05)
             action = agent.act(state, epsilon)
-            next_state, reward, done, _ = env.step(action)
+            next_state, reward, done, _, _ = env.step(action)
 
             reward_sum += reward
 
@@ -108,7 +105,11 @@ def main():
         #if avg >= 199:
         #    epsilon = 0
         #    need_render = True
-        need_render = e % 100 == 0
+        need_render = (0 < (e % 100) < 10)
+        if need_render:
+            env.set_render_mode('human')
+        else:
+            env.set_render_mode(None)
         if len(memory) == mlen and e % 10 == 0:
             print('Episode %d %d %f %d' % (e, avg, epsilon, best_r))
 
